@@ -7,17 +7,7 @@ from .models import Mood
 from rest_framework.permissions import IsAuthenticated
 from textblob import TextBlob
 
-# Serializers for User and Mood
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
 
-class MoodSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Mood
-        fields = ['user', 'mood', 'sentiment', 'timestamp']
 
 # Register View
 class RegisterView(views.APIView):
@@ -63,7 +53,7 @@ class MoodView(views.APIView):
             
             # Save Mood to database
             mood = Mood.objects.create(user=user, mood=mood_text, sentiment=sentiment)
-            return Response(MoodSerializer(mood).data, status=status.HTTP_201_CREATED)
+            return Response(serializers.MoodSerializer(mood).data, status=status.HTTP_201_CREATED)
         return Response({'error': 'No mood text provided'}, status=status.HTTP_400_BAD_REQUEST)
 
 # Mood History View
@@ -72,4 +62,4 @@ class MoodHistoryView(views.APIView):
 
     def get(self, request):
         moods = Mood.objects.filter(user=request.user).order_by('-timestamp')
-        return Response(MoodSerializer(moods, many=True).data)
+        return Response(serializers.MoodSerializer(moods, many=True).data)
